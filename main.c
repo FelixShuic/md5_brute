@@ -1,0 +1,99 @@
+#include <stdio.h>
+#include <openssl/md5.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <math.h>
+#include <string.h>
+
+#define HEX_DIGEST_LENGTH MD5_DIGEST_LENGTH * 2 + 1
+#define PASSWD_LENGTH 4 
+#define ASCII_COUNT 95
+#define SIMPLE_DEBUG
+
+int brute_passwd(char*);
+int md5_hash(char*, int, char*);
+
+int main(int argc, char* argv[])
+{
+  if (argc < 2)
+  {
+    puts("usage: ./md5 input-file");
+    return -1;
+  }
+
+  
+  char *filename = argv[1];
+
+  FILE* input = fopen(filename, "rb");
+
+  if(!input)
+  {
+    fprintf(stderr, "cannot open filename: %s", filename);
+    return -1;
+  }
+
+  fseek(input, 0L, SEEK_END);
+  size_t size = ftell(input);
+  fseek(input, 0L, SEEK_SET);
+
+  char* buf = (char*)malloc(sizeof(char) * size);
+  fread(buf, sizeof(char), size, input);
+
+  char md5string[HEX_DIGEST_LENGTH];
+
+  md5_hash(buf, size, md5string);
+
+  puts(md5string);
+
+  free(buf);
+
+  brute_passwd(md5string);
+}
+
+int md5_hash(char* str, int length, char* md5string)
+{
+  unsigned char digest[MD5_DIGEST_LENGTH];
+
+  MD5_CTX context;
+  MD5_Init(&context);
+  MD5_Update(&context, str, length);
+  MD5_Final(digest, &context);
+
+  for(int i = 0; i < MD5_DIGEST_LENGTH; ++i)
+  {
+    sprintf(&md5string[i * 2], "%02x", (unsigned int)digest[i]);
+  }
+  return 1;
+}
+
+int brute_passwd(char* hash)
+{
+  char passwd[PASSWD_LENGTH];
+  
+  for(int i = 0; i < PASSWD_LENGTH; ++i)
+  {
+    passwd[i] = '\0';
+  }
+
+  for(int i = 1; i <= PASSWD_LENGTH; ++i)
+  {
+    iters = pow(95, i);
+    for(int j = 0; j < iters; ++j)
+    {
+          passwd[] = j;
+
+          char md5string[HEX_DIGEST_LENGTH];
+          md5_hash(passwd, i, md5string);
+#ifdef SIMPLE_DEBUG
+          printf("%s%s%s%s\n", "Passwd: ", passwd, " MD5:", md5string);
+#endif
+          if(!strcmp(md5string, hash))
+          {
+            printf("%s%s\n", "Password bruted: ", passwd);
+            return 1;
+          }
+      passwd[i] = 33;
+    }
+  }
+  return 0;
+}
