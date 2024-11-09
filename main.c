@@ -6,9 +6,10 @@
 #include <string.h>
 
 #define HEX_DIGEST_LENGTH MD5_DIGEST_LENGTH * 2 + 1
-#define PASSWD_LENGTH 4 
+#define PASSWD_LENGTH 5 
 #define ASCII_COUNT 95
 #define SIMPLE_DEBUG
+//#define SLEEP
 
 int brute_passwd(char*);
 int md5_hash(char*, int, char*);
@@ -77,23 +78,38 @@ int brute_passwd(char* hash)
 
   for(int i = 1; i <= PASSWD_LENGTH; ++i)
   {
-    iters = pow(95, i);
+    int iters = pow(95, i);
+    int *powers_of_i = (int*)malloc(sizeof(int) * i);
+    for(int p = 0; p < i; ++p)
+    {
+      powers_of_i[p] = pow(95, p); 
+    }
+
     for(int j = 0; j < iters; ++j)
     {
-          passwd[] = j;
-
-          char md5string[HEX_DIGEST_LENGTH];
-          md5_hash(passwd, i, md5string);
+      for(int p = i - 1; p >= 0; --p)
+      {
+        if(!(j % powers_of_i[p]))
+        {
+          passwd[p] = (j / powers_of_i[p]) % 94 + 33;
+          break;
+        }
+      }
+      char md5string[HEX_DIGEST_LENGTH];
+      md5_hash(passwd, i, md5string);
 #ifdef SIMPLE_DEBUG
-          printf("%s%s%s%s\n", "Passwd: ", passwd, " MD5:", md5string);
+      printf("%s%s%s%s\n", "Passwd: ", passwd, " MD5:", md5string);
 #endif
-          if(!strcmp(md5string, hash))
-          {
-            printf("%s%s\n", "Password bruted: ", passwd);
-            return 1;
-          }
-      passwd[i] = 33;
+#ifdef SLEEP
+      sleep(1);
+#endif
+      if(!strcmp(md5string, hash))
+      {
+        printf("%s%s\n", "Password bruted: ", passwd);
+        return 1;
+      }
     }
+    free(powers_of_i);
   }
   return 0;
 }
