@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 
   if(size != HEX_DIGEST_LENGTH)
   {
-    printf("%s%d%s\n", "Passed file has a string which is not ", HEX_DIGEST_LENGTH, " long. Consider creating file with just cat > input.txt to avoid adding a trailing \\n");
+    fprintf(stderr, "%s%d%s\n", "Passed file has a string which is not ", HEX_DIGEST_LENGTH, " long. Consider creating file with just cat > input.txt to avoid adding a trailing \\n");
     return -1;
   }
 
@@ -84,11 +84,11 @@ int brute_passwd(char* hash)
   for(int i = 1; i <= PASSWD_LENGTH; ++i)
   {
     printf("%s%d\n", "Str length: ", i);
-    uint_64 iters = pow(95, i);
+    uint_64 iters = pow(ASCII_COUNT, i);
     uint_64 *powers_of_i = (uint_64*)malloc(sizeof(uint_64) * i);
     for(int p = 0; p < i; ++p)
     {
-      powers_of_i[p] = pow(95, p); 
+      powers_of_i[p] = pow(ASCII_COUNT, p); 
     }
   
     for(uint_64 j = 0; j < iters; ++j)
@@ -97,7 +97,7 @@ int brute_passwd(char* hash)
       {
         if(!(j % powers_of_i[p]))
         {
-          passwd[p] = (j / powers_of_i[p]) % 94 + 33;
+          passwd[p] = (j / powers_of_i[p]) % ASCII_COUNT + 33;
           break;
         }
       }
