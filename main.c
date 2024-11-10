@@ -4,12 +4,15 @@
 #include <unistd.h>
 #include <math.h>
 #include <string.h>
+#include <omp.h>
 
-#define HEX_DIGEST_LENGTH MD5_DIGEST_LENGTH * 2 + 1
+#define HEX_DIGEST_LENGTH MD5_DIGEST_LENGTH * 2
 #define PASSWD_LENGTH 5 
 #define ASCII_COUNT 95
-#define SIMPLE_DEBUG
+//#define SIMPLE_DEBUG
 //#define SLEEP
+
+typedef unsigned long long int uint_64;
 
 int brute_passwd(char*);
 int md5_hash(char*, int, char*);
@@ -40,16 +43,18 @@ int main(int argc, char* argv[])
   char* buf = (char*)malloc(sizeof(char) * size);
   fread(buf, sizeof(char), size, input);
 
-  char md5string[HEX_DIGEST_LENGTH];
+  if(size != HEX_DIGEST_LENGTH)
+  {
+    printf("%s%d%s\n", "Passed file has a string which is not ", HEX_DIGEST_LENGTH, " long. Consider creating file with just cat > input.txt to avoid adding a trailing \\n");
+    return -1;
+  }
 
-  md5_hash(buf, size, md5string);
+  puts(buf);
 
-  puts(md5string);
+  brute_passwd(buf);
 
   free(buf);
-
-  brute_passwd(md5string);
-}
+  }
 
 int md5_hash(char* str, int length, char* md5string)
 {
@@ -78,14 +83,15 @@ int brute_passwd(char* hash)
 
   for(int i = 1; i <= PASSWD_LENGTH; ++i)
   {
-    int iters = pow(95, i);
-    int *powers_of_i = (int*)malloc(sizeof(int) * i);
+    printf("%s%d\n", "Str length: ", i);
+    uint_64 iters = pow(95, i);
+    uint_64 *powers_of_i = (uint_64*)malloc(sizeof(uint_64) * i);
     for(int p = 0; p < i; ++p)
     {
       powers_of_i[p] = pow(95, p); 
     }
-
-    for(int j = 0; j < iters; ++j)
+  
+    for(uint_64 j = 0; j < iters; ++j)
     {
       for(int p = i - 1; p >= 0; --p)
       {
